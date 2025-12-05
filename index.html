@@ -1,14 +1,346 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>call-of-python</title>
+    <title>Aprende Python Interactivo</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuración para un diseño más moderno y fuente 'Inter' -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        :root {
+            --color-primary: #1e3a8a; /* Indigo-800 */
+            --color-accent: #34d399;  /* Teal-400 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Fondo gris muy claro */
+            color: #1f2937; /* Texto gris oscuro */
+        }
+        /* Estilos personalizados para el editor de código */
+        #code-editor {
+            font-family: 'Consolas', 'Monaco', monospace;
+            min-height: 150px;
+            tab-size: 4;
+            line-height: 1.5;
+            caret-color: var(--color-accent); /* Cursor llamativo */
+        }
+        /* Estilo para simular el highlighting de sintaxis básico */
+        .python-keyword { color: #5a67d8; font-weight: 600; } /* Azul */
+        .python-string { color: #059669; } /* Verde esmeralda */
+        .python-number { color: #f59e0b; } /* Ámbar */
+    </style>
 </head>
-<body>
-   <div class="contenedor">
-    <div id="app"></div>
-   </div> 
-   <div class="contenedor" id="app"></div>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Encabezado (Header) -->
+    <header class="bg-white shadow-lg p-4 sticky top-0 z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-gray-900">
+                🐍 Aprende Python Interactivo
+            </h1>
+            <nav class="hidden md:block">
+                <a href="#about" class="text-gray-600 hover:text-indigo-600 transition duration-150 p-2 rounded-lg">Acerca de</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="flex flex-1 container mx-auto p-4 pt-6 md:pt-10">
+        <!-- Barra de Navegación (Sidebar) -->
+        <aside id="sidebar" class="w-full md:w-64 md:mr-6 mb-6 md:mb-0 bg-white p-4 rounded-xl shadow-md flex-shrink-0">
+            <h2 class="text-xl font-semibold mb-4 border-b pb-2 text-indigo-700">Unidades</h2>
+            <ul id="lesson-list" class="space-y-2">
+                <!-- Los temas se renderizarán aquí mediante JavaScript -->
+            </ul>
+        </aside>
+
+        <!-- Área de Contenido Principal -->
+        <section class="flex-1 bg-white p-6 rounded-xl shadow-lg">
+            <h2 id="current-title" class="text-3xl font-extrabold mb-4 text-gray-900">Introducción</h2>
+            
+            <!-- Explicación Teórica -->
+            <div id="theory-explanation" class="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-lg text-gray-800">
+                <p class="text-lg">¡Bienvenido a tu curso interactivo de Python! Aquí aprenderás los fundamentos esenciales de la programación con ejercicios prácticos que simulan la ejecución de código en tiempo real.</p>
+            </div>
+
+            <!-- Escenario Dinámico -->
+            <div id="dynamic-scenario" class="hidden">
+                <h3 class="text-2xl font-bold mb-4 text-indigo-700">✍️ Escenario Práctico</h3>
+                
+                <!-- Problema -->
+                <p id="scenario-problem" class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-gray-800"></p>
+                
+                <!-- Editor de Código -->
+                <label for="code-editor" class="block text-sm font-medium text-gray-700 mb-2">Tu Código Python (Simulado):</label>
+                <textarea id="code-editor" class="w-full p-3 border-2 border-gray-300 rounded-lg shadow-inner focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" placeholder="# Escribe tu código aquí..."></textarea>
+                
+                <!-- Botón de Ejecutar -->
+                <button id="execute-button" class="mt-4 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50">
+                    Ejecutar y Verificar
+                </button>
+
+                <!-- Retroalimentación -->
+                <div id="feedback" class="mt-4 p-3 rounded-lg hidden"></div>
+                
+                <!-- Botón de Avance (Siguiente Nivel) -->
+                <button id="next-button" class="mt-4 px-6 py-3 bg-teal-500 text-white font-semibold rounded-lg shadow-md hover:bg-teal-600 transition duration-150 focus:outline-none focus:ring-4 focus:ring-teal-500 focus:ring-opacity-50 hidden">
+                    Siguiente Nivel &rarr;
+                </button>
+            </div>
+            
+        </section>
+    </main>
+
+    <!-- Pie de Página (Footer) -->
+    <footer class="bg-gray-800 text-white p-4 mt-auto">
+        <div class="container mx-auto text-center text-sm">
+            <p>&copy; 2024 Aprende Python Interactivo. Proyecto educativo simulado.</p>
+        </div>
+    </footer>
+
+    <!-- Lógica JavaScript -->
+    <script>
+        // Definición de los escenarios y contenido del curso
+        const scenarios = [
+            {
+                id: 'intro',
+                title: 'Introducción',
+                theory: 'Python es un lenguaje de programación de alto nivel, interpretado y multiparadigma. Es conocido por su sintaxis clara y legible, lo que lo hace ideal para principiantes. En la siguiente unidad empezaremos a trabajar con la base de todo programa: las variables.',
+                problem: null, // No hay problema de código para la introducción
+                validation: null
+            },
+            {
+                id: 'variables',
+                title: 'Variables',
+                theory: 'Una variable es un nombre que se utiliza para almacenar un valor en la memoria. En Python, no necesitas declarar el tipo; simplemente asignas un valor. \n\nSintaxis: <nombre_variable> = <valor>',
+                problem: 'Declara una variable llamada <span class="font-mono font-bold text-red-600">edad</span> y asígnale el valor entero <span class="font-mono font-bold text-red-600">25</span>. ¡El nombre de la variable debe ser exacto!',
+                placeholder: 'edad = 25',
+                validation: (code) => {
+                    // Validar si el código contiene exactamente 'edad = 25', ignorando espacios extra.
+                    const regex = /\bedad\s*=\s*25\b/; 
+                    if (regex.test(code)) {
+                        return { success: true, message: "¡Excelente! Has declarado correctamente la variable 'edad' con el valor 25. Las variables son la base de todo." };
+                    }
+                    return { success: false, message: "Incorrecto. Asegúrate de declarar la variable exactamente como <span class='font-mono'>edad = 25</span>. Revisa los espacios y el valor." };
+                }
+            },
+            {
+                id: 'datatypes',
+                title: 'Tipos de Datos y Cadenas',
+                theory: 'Los tipos de datos más comunes son enteros (<span class="font-mono">int</span>), flotantes (<span class="font-mono">float</span>) y cadenas de texto (<span class="font-mono">str</span>). Para imprimir información en la consola usamos la función <span class="font-mono">print()</span>. Puedes concatenar cadenas con el operador <span class="font-mono">+</span>.',
+                problem: 'Declara una variable llamada <span class="font-mono font-bold text-red-600">nombre</span> y asígnale tu nombre entre comillas. Luego, imprime en pantalla el mensaje: "Hola " seguido del valor de la variable <span class="font-mono">nombre</span>.',
+                placeholder: 'nombre = "Tu Nombre"\nprint("Hola " + nombre)',
+                validation: (code) => {
+                    // 1. Verificar asignación de nombre
+                    const nameRegex = /\bnombre\s*=\s*(["'])[^"']+\1/;
+                    // 2. Verificar la impresión correcta
+                    // Se permiten variaciones en el mensaje, pero la estructura de concatenación debe estar.
+                    const printRegex = /print\s*\(\s*["']Hola\s+["']\s*\+\s*nombre\s*\)/; 
+
+                    if (!nameRegex.test(code)) {
+                        return { success: false, message: "Error: Debes declarar una variable llamada <span class='font-mono'>nombre</span> y asignarle un valor de texto (string)." };
+                    }
+
+                    if (!printRegex.test(code)) {
+                         return { success: false, message: "Error: Asegúrate de usar <span class='font-mono'>print(\"Hola \" + nombre)</span> para concatenar y mostrar el mensaje." };
+                    }
+                    
+                    return { success: true, message: "¡Perfecto! Has usado una cadena de texto y el operador de concatenación <span class='font-mono'>+</span> correctamente. Además, usaste la función <span class='font-mono'>print()</span>." };
+                }
+            },
+            {
+                id: 'conditionals',
+                title: 'Condicionales (if/else)',
+                theory: 'Las estructuras condicionales nos permiten ejecutar código solo si se cumple una condición. La sintaxis básica usa <span class="font-mono">if</span>, seguido de una condición y dos puntos (<span class="font-mono">:</span>). Recuerda la indentación, ¡es crucial en Python!',
+                problem: 'Se te ha dado una variable llamada <span class="font-mono font-bold text-red-600">numero</span> con el valor 12. Usa una sentencia <span class="font-mono">if</span> para verificar si <span class="font-mono">numero</span> es mayor que <span class="font-mono">10</span>, y si lo es, imprime el texto "Es grande".',
+                placeholder: 'numero = 12\n\nif numero > 10:\n    print("Es grande")',
+                validation: (code) => {
+                    // 1. Verificar la asignación inicial (opcional, pero buena práctica)
+                    const assignmentRegex = /\bnumero\s*=\s*12\b/;
+                    // 2. Verificar la sentencia if
+                    const ifRegex = /\bif\s+numero\s*>\s*10\s*:/;
+                    // 3. Verificar la impresión dentro del bloque if
+                    const printRegex = /if\s+numero\s*>\s*10\s*:\s*(\n|\r\n|\r)\s+print\s*\(\s*["']Es grande["']\s*\)/;
+
+                    if (!assignmentRegex.test(code)) {
+                        return { success: false, message: "Error: Asegúrate de que la primera línea sea <span class='font-mono'>numero = 12</span>." };
+                    }
+
+                    if (!ifRegex.test(code)) {
+                        return { success: false, message: "Error: No has usado la estructura <span class='font-mono'>if numero > 10:</span> correctamente." };
+                    }
+
+                    if (!printRegex.test(code)) {
+                        return { success: false, message: "Error: Verifica que el <span class='font-mono'>print(\"Es grande\")</span> esté correctamente <span class='font-bold'>indentado</span> bajo el <span class='font-mono'>if</span>." };
+                    }
+
+                    return { success: true, message: "¡Magnífico! Entiendes la lógica condicional y la importancia de la indentación en Python. Puedes avanzar." };
+                }
+            },
+            {
+                id: 'loops',
+                title: 'Bucles (for)',
+                theory: 'Los bucles <span class="font-mono">for</span> se usan para iterar sobre una secuencia (como una lista o un rango de números). La función <span class="font-mono">range(n)</span> genera números desde 0 hasta n-1.',
+                problem: 'Escribe un bucle <span class="font-mono">for</span> que itere <span class="font-mono">3</span> veces (usando <span class="font-mono">range(3)</span>) e imprima la palabra "Repetición" en cada iteración.',
+                placeholder: 'for i in range(3):\n    print("Repetición")',
+                validation: (code) => {
+                    const forRegex = /\bfor\s+\w+\s+in\s+range\s*\(\s*3\s*\)\s*:/;
+                    const printRegex = /print\s*\(\s*["']Repetición["']\s*\)/; 
+                    
+                    if (!forRegex.test(code)) {
+                        return { success: false, message: "Error: El bucle <span class='font-mono'>for</span> no está declarado correctamente o el rango no es <span class='font-mono'>range(3)</span>." };
+                    }
+
+                    if (!code.match(printRegex)) {
+                        return { success: false, message: "Error: Asegúrate de que la impresión de \"Repetición\" esté dentro del bucle." };
+                    }
+
+                    return { success: true, message: "¡Genial! Has implementado tu primer bucle <span class='font-mono'>for</span>. ¡La repetición controlada es clave en la programación!" };
+                }
+            },
+            {
+                id: 'end',
+                title: '¡Felicidades!',
+                theory: 'Has completado los fundamentos de Python en esta aplicación. ¡Sigue practicando para convertirte en un experto!',
+                problem: null,
+                validation: null
+            }
+        ];
+
+        let currentScenarioIndex = 0;
+
+        // Referencias a elementos del DOM
+        const lessonList = document.getElementById('lesson-list');
+        const currentTitle = document.getElementById('current-title');
+        const theoryExplanation = document.getElementById('theory-explanation');
+        const dynamicScenario = document.getElementById('dynamic-scenario');
+        const scenarioProblem = document.getElementById('scenario-problem');
+        const codeEditor = document.getElementById('code-editor');
+        const executeButton = document.getElementById('execute-button');
+        const nextButton = document.getElementById('next-button');
+        const feedbackDiv = document.getElementById('feedback');
+        
+        // --- Funciones de Utilidad ---
+
+        // Función para renderizar la lista de lecciones en el sidebar
+        function renderLessonList() {
+            lessonList.innerHTML = ''; // Limpiar la lista actual
+            scenarios.forEach((scenario, index) => {
+                const li = document.createElement('li');
+                li.className = 'cursor-pointer p-2 rounded-lg transition duration-150 hover:bg-gray-100';
+                
+                // Resaltar el tema actual
+                if (index === currentScenarioIndex) {
+                    li.classList.add('bg-indigo-600', 'text-white', 'font-semibold', 'shadow-md');
+                    li.classList.remove('hover:bg-gray-100');
+                } else {
+                    li.classList.add('text-gray-700');
+                }
+
+                li.textContent = `${index + 1}. ${scenario.title}`;
+                li.onclick = () => {
+                    currentScenarioIndex = index;
+                    loadScenario(index);
+                };
+                lessonList.appendChild(li);
+            });
+        }
+
+        // Función principal para cargar un escenario
+        function loadScenario(index) {
+            const scenario = scenarios[index];
+            if (!scenario) return;
+
+            // Actualizar título y teoría
+            currentTitle.textContent = scenario.title;
+            theoryExplanation.innerHTML = scenario.theory.replace(/\n/g, '<br>');
+
+            // Restablecer retroalimentación y botones
+            feedbackDiv.classList.add('hidden');
+            feedbackDiv.innerHTML = '';
+            nextButton.classList.add('hidden');
+            executeButton.classList.remove('hidden');
+
+            if (scenario.problem) {
+                // Mostrar editor de código y problema
+                dynamicScenario.classList.remove('hidden');
+                scenarioProblem.innerHTML = scenario.problem;
+                codeEditor.value = scenario.placeholder || '';
+                codeEditor.disabled = false;
+                executeButton.disabled = false;
+            } else {
+                // Ocultar editor si es solo teoría (como la introducción y el final)
+                dynamicScenario.classList.add('hidden');
+            }
+
+            // Volver a renderizar la lista para actualizar el resaltado
+            renderLessonList();
+        }
+
+        // --- Lógica de Validación (Simulación de Entorno Python) ---
+        function handleExecute() {
+            const code = codeEditor.value.trim();
+            const scenario = scenarios[currentScenarioIndex];
+
+            if (!code) {
+                showFeedback('Por favor, escribe tu código antes de verificar.', 'error');
+                return;
+            }
+            
+            if (!scenario.validation) {
+                // Esto no debería suceder en un escenario de práctica, pero es un resguardo.
+                showFeedback('Este escenario no tiene una validación de código.', 'success');
+                return;
+            }
+
+            // Ejecutar la función de validación específica del escenario
+            const result = scenario.validation(code);
+            
+            if (result.success) {
+                showFeedback(result.message, 'success');
+                codeEditor.disabled = true;
+                executeButton.classList.add('hidden');
+                nextButton.classList.remove('hidden');
+            } else {
+                showFeedback(result.message, 'error');
+            }
+        }
+
+        // Función para mostrar la retroalimentación al usuario
+        function showFeedback(message, type) {
+            feedbackDiv.classList.remove('hidden', 'bg-red-100', 'bg-green-100', 'border-red-400', 'border-green-400', 'text-red-700', 'text-green-700');
+            
+            if (type === 'success') {
+                feedbackDiv.classList.add('bg-green-100', 'border-green-400', 'text-green-700', 'border-l-4');
+                feedbackDiv.innerHTML = '<span class="font-bold">¡CORRECTO!</span> ' + message;
+            } else {
+                feedbackDiv.classList.add('bg-red-100', 'border-red-400', 'text-red-700', 'border-l-4');
+                feedbackDiv.innerHTML = '<span class="font-bold">INCORRECTO.</span> ' + message;
+            }
+        }
+
+        // --- Event Listeners ---
+        executeButton.addEventListener('click', handleExecute);
+
+        nextButton.addEventListener('click', () => {
+            currentScenarioIndex++;
+            if (currentScenarioIndex < scenarios.length) {
+                loadScenario(currentScenarioIndex);
+            } else {
+                // Si ya no hay más, regresar a la introducción o mostrar mensaje final
+                loadScenario(scenarios.length - 1); // Cargar el escenario final '¡Felicidades!'
+                nextButton.classList.add('hidden'); // Ocultar el botón de siguiente
+            }
+        });
+
+        // --- Inicialización ---
+        window.onload = () => {
+            renderLessonList();
+            loadScenario(currentScenarioIndex);
+        };
+    </script>
+
 </body>
 </html>
